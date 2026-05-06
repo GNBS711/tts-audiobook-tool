@@ -189,6 +189,16 @@ class Project(BaseModel):
     pocket_temperature: float = -1
     pocket_seed: int = -1
 
+    # OmniVoice
+    omnivoice_voice_file_name: str = ""
+    omnivoice_voice_transcript: str = ""
+    omnivoice_target: str = ""
+    omnivoice_dtype: str = "float16"
+    omnivoice_instruct: str = ""
+    omnivoice_speed: float = -1
+    omnivoice_num_step: int = -1
+    omnivoice_seed: int = -1
+
     def __setattr__(self, name: str, value) -> None:
         super().__setattr__(name, value)
         if name != '_autosave' and getattr(self, '_autosave', False):
@@ -529,6 +539,29 @@ class Project(BaseModel):
 
         d['pocket_model_code'] = d.get('pocket_model_code', '')
 
+        # omnivoice_seed
+        seed = d.get("omnivoice_seed", -1)
+        if not (-1 <= seed <= SEED_MAX):
+            add_warning("omnivoice_seed", -1)
+            seed = -1
+        d["omnivoice_seed"] = int(seed)
+
+        # omnivoice_num_step
+        value = d.get("omnivoice_num_step", -1)
+        if value != -1:
+            if not isinstance(value, int) or not (1 <= value <= 128):
+                value = -1
+                add_warning("omnivoice_num_step", value)
+        d["omnivoice_num_step"] = int(value)
+
+        # omnivoice_speed
+        value = d.get("omnivoice_speed", -1)
+        if value != -1:
+            if not isinstance(value, (float, int)) or not (0.5 <= value <= 2.0):
+                value = -1
+                add_warning("omnivoice_speed", value)
+        d["omnivoice_speed"] = value
+
         return d
 
     @staticmethod
@@ -694,7 +727,16 @@ class Project(BaseModel):
             "pocket_predefined_voice": self.pocket_predefined_voice,
             "pocket_model_code": self.pocket_model_code,
             "pocket_temperature": self.pocket_temperature,
-            "pocket_seed": self.pocket_seed
+            "pocket_seed": self.pocket_seed,
+
+            "omnivoice_voice_file_name": self.omnivoice_voice_file_name,
+            "omnivoice_voice_transcript": self.omnivoice_voice_transcript,
+            "omnivoice_target": self.omnivoice_target,
+            "omnivoice_dtype": self.omnivoice_dtype,
+            "omnivoice_instruct": self.omnivoice_instruct,
+            "omnivoice_speed": self.omnivoice_speed,
+            "omnivoice_num_step": self.omnivoice_num_step,
+            "omnivoice_seed": self.omnivoice_seed
         }
 
     def save(self) -> str:
@@ -808,6 +850,9 @@ class Project(BaseModel):
                 case TtsModelInfos.POCKET:
                     self.pocket_voice_file_name = dest_file_name
                     self.pocket_predefined_voice = ""
+                case TtsModelInfos.OMNIVOICE:
+                    self.omnivoice_voice_file_name = dest_file_name
+                    self.omnivoice_voice_transcript = transcript
                 case _:
                     raise Exception(f"Unsupported tts type {tts_type}")
         return ""
@@ -855,6 +900,9 @@ class Project(BaseModel):
                 case TtsModelInfos.POCKET:
                     self.pocket_voice_file_name = ""
                     self.pocket_predefined_voice = ""
+                case TtsModelInfos.OMNIVOICE:
+                    self.omnivoice_voice_file_name = ""
+                    self.omnivoice_voice_transcript = ""
                 case _:
                     raise ValueError(f"Unsupported tts_type: {tts_type}")
 
@@ -936,6 +984,7 @@ class Project(BaseModel):
             source_project.glm_voice_file_name,
             source_project.mira_voice_file_name,
             source_project.pocket_voice_file_name,
+            source_project.omnivoice_voice_file_name,
         ]
         src_files = [file for file in src_files if file]
 

@@ -403,6 +403,35 @@ class TtsModelInfos(Enum):
         ]
     )
 
+    OMNIVOICE = TtsModelInfo(
+        module_test="omnivoice",
+        file_tag="omnivoice",
+        torch_devices=["cuda", "mps", "cpu"],
+        sample_rate=24000,
+        max_words_default=40,
+        max_words_reco_range=(40, 80),
+        voice_file_name_attr="omnivoice_voice_file_name",
+        requires_voice=False,
+        requires_voice_transcript=True,
+        batch_size_project_field="",
+        can_stream=False,
+        semantic_trim_last=True,
+        hallucinates_music=False,
+        un_all_caps=True,
+        requirements_file_name="requirements-omnivoice.txt",
+        ui={
+            "proper_name": "OmniVoice",
+            "short_name": "OmniVoice",
+            "voice_path_console": "Enter voice clone audio clip file path: ",
+            "voice_path_requestor": "Select voice clone audio clip",
+            "project_links": ["https://github.com/k2-fsa/OmniVoice",
+                            "https://huggingface.co/k2-fsa/OmniVoice"]
+        },
+        substitutions=[
+            ("\u2014", ", "), ("\u2500", ", ")
+        ]
+    )
+
     @staticmethod
     def recommended_range_string(info: TtsModelInfo) -> str:
         if info.max_words_reco_range[1] == info.max_words_reco_range[0]:
